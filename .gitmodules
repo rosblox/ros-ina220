@@ -1,0 +1,3 @@
+[submodule "ina220-python"]
+	path = ina220-python
+	url = https://github.com/rosblox/ina220-python
