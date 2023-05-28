@@ -14,38 +14,42 @@
 
 import rclpy
 from rclpy.node import Node
-from geometry_msgs.msg import Vector3Stamped
+from sensor_msgs.msg import BatteryState
 
 
-import board
-import adafruit_ina220
+import smbus
+from ina220 import INA220
 
 
-class Rosina220Publisher(Node):
+class RosIna220Publisher(Node):
 
     def __init__(self):
         super().__init__('ros_ina220_publisher')
-        self.i2c = board.I2C()
-        self.ina220 = adafruit_ina220.ina220_I2C(self.i2c)
-        self.publisher_ = self.create_publisher(Vector3Stamped, 'ina220/data', 10)
+
+        bus = smbus.SMBus(1)
+        self.ina220 = INA220(i2c_addr=0x41, i2c_dev=bus)
+
+        self.publisher_ = self.create_publisher(BatteryState, 'ina220/data', 10)
         timer_period = 0.01  # seconds
         self.timer = self.create_timer(timer_period, self.timer_callback)
 
     def timer_callback(self):
-        x, y, z = self.ina220.acceleration
-        msg = Vector3Stamped()
+        current_draw, bus_voltage, shunt_voltage = self.ina220.get_measurements()
+
+        msg = BatteryState()
         msg.header.stamp = self.get_clock().now().to_msg()
         msg.header.frame_id = "ros_ina220"
-        msg.vector.x = x
-        msg.vector.y = y
-        msg.vector.z = z
+
+        msg.current = current_draw
+        msg.voltage = bus_voltage
+
         self.publisher_.publish(msg)
 
 
 def main(args=None):
     rclpy.init(args=args)
 
-    ros_ina220_publisher = Rosina220Publisher()
+    ros_ina220_publisher = RosIna220Publisher()
 
     rclpy.spin(ros_ina220_publisher)
 
