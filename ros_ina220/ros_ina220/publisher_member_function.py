@@ -30,7 +30,7 @@ class RosIna220Publisher(Node):
         self.ina220 = INA220(i2c_addr=0x41, i2c_dev=bus)
 
         self.publisher_ = self.create_publisher(BatteryState, 'ina220/data', 10)
-        timer_period = 0.01  # seconds
+        timer_period = 0.1  # seconds
         self.timer = self.create_timer(timer_period, self.timer_callback)
 
     def timer_callback(self):
