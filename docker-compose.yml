@@ -1,0 +1,16 @@
+services:
+  ros-ina220:
+    image: ghcr.io/rosblox/ros-ina220:humble
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: always
+    network_mode: "host"
+    ipc: host
+    pid: host
+    devices:
+      - "/dev/i2c-4:/dev/i2c-1"
+    environment:
+      - UID=${HOST_UID}
+      - ROS_DOMAIN_ID
+    command: su - ros --whitelist-environment=ROS_DOMAIN_ID /run.sh
